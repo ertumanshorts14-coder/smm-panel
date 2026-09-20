@@ -36,7 +36,6 @@ export default async function DashboardPage({
   const { data: servicesList } = await supabase
     .from('services')
     .select('id, name')
-    .limit(20)
 
   const serviceMap: Record<number, string> = {}
   servicesList?.forEach((s) => {
@@ -105,12 +104,22 @@ export default async function DashboardPage({
                 <tbody>
                   {orders.map((o: any) => (
                     <tr key={o.id} className="border-b last:border-0 text-slate-900">
-                      <td className="py-2">{serviceMap[o.service_id] ?? '-'}</td>
+                      <td className="py-2">{serviceMap[o.service_id] ?? `Service #${o.service_id}`}</td>
                       <td className="py-2 truncate max-w-xs">{o.link}</td>
                       <td className="py-2">{o.quantity}</td>
-                      <td className="py-2">Rs {o.charge}</td>
+                      <td className="py-2">Rs {Number(o.charge).toFixed(2)}</td>
                       <td className="py-2">
-                        <span className="text-xs px-2 py-1 rounded bg-slate-100">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            o.status === 'completed'
+                              ? 'bg-green-100 text-green-800'
+                              : o.status === 'canceled'
+                                ? 'bg-red-100 text-red-800'
+                                : o.status === 'processing'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
                           {o.status}
                         </span>
                       </td>
