@@ -95,21 +95,61 @@ export default async function TopupPage({
         {/* Payment Methods */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-bold text-slate-900 mb-4">Payment Methods</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="border rounded-lg p-4">
-              <p className="font-bold text-green-700 mb-2">SadaPay</p>
-              <p className="text-sm text-slate-600">Account Title: <b className="text-slate-900">Your Name</b></p>
-              <p className="text-sm text-slate-600">Number: <b className="text-slate-900">03XX-XXXXXXX</b></p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* SadaPay */}
+            <div className="border border-green-200 rounded-lg p-4 bg-green-50/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <p className="font-bold text-green-700">SadaPay</p>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Account Title</p>
+                  <p className="font-semibold text-slate-900">Muhammed Umar</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Account Number</p>
+                  <p className="font-semibold text-slate-900">0319-7399588</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">IBAN</p>
+                  <p className="font-mono text-xs text-slate-900 break-all">
+                    PK91SADA0000003197399588
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="border rounded-lg p-4">
-              <p className="font-bold text-blue-700 mb-2">NayaPay</p>
-              <p className="text-sm text-slate-600">Account Title: <b className="text-slate-900">Your Name</b></p>
-              <p className="text-sm text-slate-600">Number: <b className="text-slate-900">03XX-XXXXXXX</b></p>
+
+            {/* NayaPay */}
+            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <p className="font-bold text-blue-700">NayaPay</p>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Account Title</p>
+                  <p className="font-semibold text-slate-900">Muhammed Umar</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Account Number</p>
+                  <p className="font-semibold text-slate-900">0319-7399588</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">IBAN</p>
+                  <p className="font-mono text-xs text-slate-900 break-all">
+                    PK30NAYA1234503197399588
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
-            ⚠️ Upar wale numbers apne SadaPay/NayaPay account ke daalo (ye placeholder hain).
-          </p>
+
+          <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+            ℹ️ Payment ke baad neeche form mein <b>TID (Transaction ID)</b> aur{" "}
+            <b>screenshot</b> zaroor bhejein. Admin 5-30 minute mein verify karega.
+          </div>
         </div>
 
         {/* Form */}
@@ -117,7 +157,7 @@ export default async function TopupPage({
           <h2 className="text-lg font-bold text-slate-900 mb-4">Submit Top-up Request</h2>
 
           <form action={submitTopup} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Amount (PKR)
@@ -126,10 +166,11 @@ export default async function TopupPage({
                   type="number"
                   name="amount"
                   required
-                  min={50}
-                  placeholder="500"
+                  min={500}
+                  placeholder="1000"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
                 />
+                <p className="text-xs text-slate-500 mt-1">Minimum Rs 500</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -147,7 +188,7 @@ export default async function TopupPage({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Sender Name
@@ -189,7 +230,7 @@ export default async function TopupPage({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Payment Screenshot (optional)
+                Payment Screenshot (recommended)
               </label>
               <input
                 type="file"
@@ -212,38 +253,44 @@ export default async function TopupPage({
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-bold text-slate-900 mb-4">My Requests</h2>
           {requests && requests.length > 0 ? (
-            <table className="w-full text-sm">
-              <thead className="text-left text-slate-500 border-b">
-                <tr>
-                  <th className="pb-2">Amount</th>
-                  <th className="pb-2">Method</th>
-                  <th className="pb-2">TID</th>
-                  <th className="pb-2">Status</th>
-                  <th className="pb-2">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((r: any) => (
-                  <tr key={r.id} className="border-b last:border-0 text-slate-900">
-                    <td className="py-2">Rs {r.amount}</td>
-                    <td className="py-2 capitalize">{r.method}</td>
-                    <td className="py-2">{r.txn_ref}</td>
-                    <td className="py-2">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        r.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        r.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="py-2 text-slate-500 text-xs">
-                      {new Date(r.created_at).toLocaleDateString()}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-slate-500 border-b">
+                  <tr>
+                    <th className="pb-2">Amount</th>
+                    <th className="pb-2">Method</th>
+                    <th className="pb-2">TID</th>
+                    <th className="pb-2">Status</th>
+                    <th className="pb-2">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {requests.map((r: any) => (
+                    <tr key={r.id} className="border-b last:border-0 text-slate-900">
+                      <td className="py-2">Rs {r.amount}</td>
+                      <td className="py-2 capitalize">{r.method}</td>
+                      <td className="py-2">{r.txn_ref}</td>
+                      <td className="py-2">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            r.status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : r.status === 'rejected'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="py-2 text-slate-500 text-xs">
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p className="text-slate-500 text-sm">Abhi koi request nahi hai.</p>
           )}
