@@ -18,6 +18,7 @@ export default async function AdminLayout({
           <AdminLink href="/admin/orders">Orders</AdminLink>
           <AdminLink href="/admin/services">Services</AdminLink>
           <AdminLink href="/admin/users">Users</AdminLink>
+          <AdminLink href="/admin/tickets">Tickets</AdminLink>
         </nav>
         <div className="mt-8 pt-4 border-t border-slate-700">
           <Link

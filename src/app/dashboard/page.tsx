@@ -38,7 +38,6 @@ export default async function DashboardPage({
     .select('id, name')
     .limit(20)
 
-  // Services map
   const serviceMap: Record<number, string> = {}
   servicesList?.forEach((s) => {
     serviceMap[s.id] = s.name
@@ -76,6 +75,7 @@ export default async function DashboardPage({
             <SidebarLink href="/dashboard/new-order">New Order</SidebarLink>
             <SidebarLink href="/dashboard/services">Services</SidebarLink>
             <SidebarLink href="/dashboard/topup">Add Funds</SidebarLink>
+            <SidebarLink href="/dashboard/tickets">Support</SidebarLink>
           </nav>
         </aside>
 
