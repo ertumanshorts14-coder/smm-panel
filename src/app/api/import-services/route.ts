@@ -7,27 +7,16 @@ export const maxDuration = 60
 
 export async function GET(req: Request) {
   const url = new URL(req.url)
-  const category = url.searchParams.get('category')
-  const markup = Number(url.searchParams.get('markup') ?? '3')
-  const limit = Number(url.searchParams.get('limit') ?? '20')
+  const markup = Number(url.searchParams.get('markup') ?? '15')
 
   const providerServices = await getProviderServices()
 
   if (!Array.isArray(providerServices)) {
     return NextResponse.json(
-      { error: 'Failed to fetch services from Tajammal', raw: providerServices },
+      { error: 'Failed to fetch services', raw: providerServices },
       { status: 500 }
     )
   }
-
-  let filtered = providerServices
-  if (category) {
-    filtered = filtered.filter((s: any) =>
-      s.category?.toLowerCase().includes(category.toLowerCase())
-    )
-  }
-
-  filtered = filtered.slice(0, limit)
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,14 +25,16 @@ export async function GET(req: Request) {
 
   let inserted = 0
   let skipped = 0
+  let updated = 0
   const errors: string[] = []
-  const insertedNames: string[] = []
 
-  for (const s of filtered) {
+  for (const s of providerServices) {
     const providerId = String(s.service)
     const cost = Number(s.rate)
-    const sellPrice = Number((cost * markup).toFixed(2))
+    let sellPrice = Number((cost * markup).toFixed(2))
+    if (sellPrice < 10) sellPrice = 10
 
+    // Check if already exists
     const { data: existing } = await supabase
       .from('services')
       .select('id')
@@ -52,10 +43,24 @@ export async function GET(req: Request) {
       .maybeSingle()
 
     if (existing) {
-      skipped++
+      // Update existing — price update karo (markup change ho sakta hai)
+      await supabase
+        .from('services')
+        .update({
+          name: s.name,
+          category: s.category ?? 'Other',
+          price_per_1000: sellPrice,
+          cost_per_1000: cost,
+          min_qty: Number(s.min),
+          max_qty: Number(s.max),
+          active: true,
+        })
+        .eq('id', existing.id)
+      updated++
       continue
     }
 
+    // Insert new
     const { error } = await supabase.from('services').insert({
       name: s.name,
       category: s.category ?? 'Other',
@@ -73,17 +78,15 @@ export async function GET(req: Request) {
       errors.push(`#${providerId}: ${error.message}`)
     } else {
       inserted++
-      insertedNames.push(`#${providerId} ${s.name}`)
     }
   }
 
   return NextResponse.json({
-    total: providerServices.length,
-    filtered: filtered.length,
+    totalFromProvider: providerServices.length,
     inserted,
+    updated,
     skipped,
-    errors: errors.slice(0, 10),
-    markup,
-    insertedServices: insertedNames,
+    errorsCount: errors.length,
+    errorsSample: errors.slice(0, 5),
   })
 }
