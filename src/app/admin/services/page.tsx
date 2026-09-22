@@ -46,11 +46,12 @@ export default async function AdminServices() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Services</h1>
+      <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-6">
+        Services
+      </h1>
 
-      {/* Add form */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-slate-900 mb-4">
+      <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
+        <h2 className="text-base md:text-lg font-bold text-slate-900 mb-4">
           Add New Service
         </h2>
         <form action={addService} className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -58,7 +59,7 @@ export default async function AdminServices() {
             name="name"
             placeholder="Service name"
             required
-            className="col-span-2 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900"
+            className="md:col-span-2 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900"
           />
           <input
             name="category"
@@ -92,14 +93,13 @@ export default async function AdminServices() {
           </div>
           <button
             type="submit"
-            className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+            className="md:col-span-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
           >
             Add Service
           </button>
         </form>
       </div>
 
-      {/* List */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

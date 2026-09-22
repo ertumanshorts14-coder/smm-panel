@@ -14,7 +14,7 @@ export default async function AdminTickets() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-6">
         Support Tickets
       </h1>
 
@@ -26,12 +26,12 @@ export default async function AdminTickets() {
               href={`/admin/tickets/${t.id}`}
               className="block bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-300 transition"
             >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-900 text-sm truncate">
                     #{t.id} — {t.subject}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1 truncate">
                     From: {t.profiles?.email ?? 'N/A'} ·{' '}
                     {new Date(t.created_at).toLocaleString()}
                   </p>
@@ -42,7 +42,7 @@ export default async function AdminTickets() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl p-8 text-center text-slate-500">
+        <div className="bg-white rounded-xl p-8 text-center text-slate-500 text-sm">
           Abhi koi ticket nahi hai.
         </div>
       )}
@@ -58,7 +58,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   return (
     <span
-      className={`text-xs px-3 py-1 rounded-full font-medium ${
+      className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${
         styles[status] ?? styles.open
       }`}
     >

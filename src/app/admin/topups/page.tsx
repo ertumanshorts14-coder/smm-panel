@@ -77,7 +77,7 @@ export default async function AdminTopups() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-6">
         Top-up Requests
       </h1>
 
