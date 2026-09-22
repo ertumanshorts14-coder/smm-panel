@@ -1,8 +1,12 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { placeProviderOrder } from '@/lib/tajammal-api'
 import ServiceSelector from './ServiceSelector'
+import SubmitButton from '@/app/components/SubmitButton'
 
 async function placeOrder(formData: FormData) {
   'use server'
@@ -54,6 +58,25 @@ async function placeOrder(formData: FormData) {
 
   let charge = Number(((quantity / 1000) * service.price_per_1000).toFixed(2))
   if (charge < 10) charge = 10
+
+  // DUPLICATE PROTECTION: Same user + service + link within 30 seconds
+  const thirtySecondsAgo = new Date(Date.now() - 30 * 1000).toISOString()
+  const { data: recentOrder } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('service_id', service_id)
+    .eq('link', link)
+    .gte('created_at', thirtySecondsAgo)
+    .maybeSingle()
+
+  if (recentOrder) {
+    redirect(
+      `/dashboard/new-order?error=${encodeURIComponent(
+        'Aap ne 30 second pehle yehi order place kiya tha. Please wait karein.'
+      )}`
+    )
+  }
 
   const { data: wallet } = await supabase
     .from('wallets')
@@ -141,7 +164,8 @@ async function placeOrder(formData: FormData) {
 
         redirect(
           `/dashboard/new-order?error=${encodeURIComponent(
-            providerResponse.error || 'Provider rejected order. Check link or quantity.'
+            providerResponse.error ||
+              'Provider rejected order. Check link or quantity.'
           )}`
         )
       }
@@ -180,7 +204,10 @@ export default async function NewOrderPage({
     <div className="min-h-screen bg-slate-100">
       <header className="bg-white shadow-sm border-b sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="text-base md:text-xl font-bold text-slate-900">
+          <Link
+            href="/dashboard"
+            className="text-base md:text-xl font-bold text-slate-900"
+          >
             SMUQ SMM
           </Link>
           <div className="flex items-center gap-2 md:gap-4">
@@ -260,12 +287,12 @@ export default async function NewOrderPage({
               Wallet se automatically deduct ho jayega.
             </div>
 
-            <button
-              type="submit"
+            <SubmitButton
+              loadingText="Placing order..."
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
             >
               Place Order
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </div>

@@ -1,7 +1,11 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
+import SubmitButton from '@/app/components/SubmitButton'
 
 async function submitTopup(formData: FormData) {
   'use server'
@@ -39,6 +43,7 @@ async function submitTopup(formData: FormData) {
   })
 
   revalidatePath('/dashboard/topup')
+  revalidatePath('/dashboard')
   redirect('/dashboard/topup?ok=1')
 }
 
@@ -68,15 +73,15 @@ export default async function TopupPage({
   return (
     <div className="min-h-screen bg-slate-100">
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="text-xl font-bold text-slate-900">
-            SMUQ SMM Panel
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+          <Link href="/dashboard" className="text-base md:text-xl font-bold text-slate-900">
+            SMUQ SMM
           </Link>
           <div className="flex items-center gap-4">
-            <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg font-semibold">
+            <div className="bg-green-50 text-green-700 px-3 md:px-4 py-2 rounded-lg font-semibold text-xs md:text-sm">
               Rs {wallet?.balance ?? 0}
             </div>
-            <Link href="/dashboard" className="text-sm text-blue-600 hover:underline">
+            <Link href="/dashboard" className="text-xs md:text-sm text-blue-600 hover:underline">
               ← Back
             </Link>
           </div>
@@ -84,17 +89,17 @@ export default async function TopupPage({
       </header>
 
       {ok === '1' && (
-        <div className="max-w-4xl mx-auto px-6 pt-4">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 pt-4">
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
             ✅ Top-up request submit ho gayi! Admin 5-30 minute mein approve karega.
           </div>
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
         {/* Payment Methods */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Payment Methods</h2>
+        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-bold text-slate-900 mb-4">Payment Methods</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* SadaPay */}
@@ -153,8 +158,10 @@ export default async function TopupPage({
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Submit Top-up Request</h2>
+        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-bold text-slate-900 mb-4">
+            Submit Top-up Request
+          </h2>
 
           <form action={submitTopup} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -168,7 +175,7 @@ export default async function TopupPage({
                   required
                   min={500}
                   placeholder="1000"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
                 />
                 <p className="text-xs text-slate-500 mt-1">Minimum Rs 500</p>
               </div>
@@ -179,7 +186,7 @@ export default async function TopupPage({
                 <select
                   name="method"
                   required
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
                 >
                   <option value="">-- Select --</option>
                   <option value="sadapay">SadaPay</option>
@@ -198,7 +205,7 @@ export default async function TopupPage({
                   name="sender_name"
                   required
                   placeholder="Your Name"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
                 />
               </div>
               <div>
@@ -210,7 +217,7 @@ export default async function TopupPage({
                   name="sender_number"
                   required
                   placeholder="03XX-XXXXXXX"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
                 />
               </div>
             </div>
@@ -224,7 +231,7 @@ export default async function TopupPage({
                 name="txn_ref"
                 required
                 placeholder="e.g., 1234567890"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
               />
             </div>
 
@@ -236,22 +243,24 @@ export default async function TopupPage({
                 type="file"
                 name="proof"
                 accept="image/*"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900 text-sm"
               />
             </div>
 
-            <button
-              type="submit"
+            <SubmitButton
+              loadingText="Submitting..."
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
             >
               Submit Request
-            </button>
+            </SubmitButton>
           </form>
         </div>
 
         {/* Past requests */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">My Requests</h2>
+        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-bold text-slate-900 mb-4">
+            My Requests
+          </h2>
           {requests && requests.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
