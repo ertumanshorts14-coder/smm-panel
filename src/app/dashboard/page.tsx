@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -39,7 +42,7 @@ export default async function DashboardPage({
     .select('id, name')
 
   const serviceMap: Record<number, string> = {}
-  servicesList?.forEach((s) => {
+  servicesList?.forEach((s: any) => {
     serviceMap[s.id] = s.name
   })
 

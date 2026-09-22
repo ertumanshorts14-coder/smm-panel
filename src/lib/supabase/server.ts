@@ -17,10 +17,12 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {
-            // Server Component mein set nahi ho sakta — ignore
-          }
+          } catch {}
         },
+      },
+      global: {
+        fetch: (url, options = {}) =>
+          fetch(url, { ...options, cache: 'no-store' }),
       },
     }
   )
