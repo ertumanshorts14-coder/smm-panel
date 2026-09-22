@@ -1,150 +1,185 @@
-import { requireAdmin } from '@/lib/admin'
-import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
-async function addService(formData: FormData) {
-  'use server'
-  const { supabase } = await requireAdmin()
+export default async function ServicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  await supabase.from('services').insert({
-    name: formData.get('name') as string,
-    category: formData.get('category') as string,
-    price_per_1000: Number(formData.get('price')),
-    min_qty: Number(formData.get('min')),
-    max_qty: Number(formData.get('max')),
-    active: true,
-  })
-
-  revalidatePath('/admin/services')
-}
-
-async function toggleService(formData: FormData) {
-  'use server'
-  const { supabase } = await requireAdmin()
-  const id = Number(formData.get('id'))
-  const active = formData.get('active') === 'true'
-
-  await supabase
-    .from('services')
-    .update({ active: !active })
-    .eq('id', id)
-
-  revalidatePath('/admin/services')
-}
-
-export default async function AdminServices() {
-  const { supabase } = await requireAdmin()
+  const { category: selectedCategory } = await searchParams
 
   const { data: services } = await supabase
     .from('services')
     .select('*')
-    .order('id', { ascending: false })
+    .eq('active', true)
+    .order('category')
+
+  // Group by category
+  const grouped: Record<string, typeof services> = {}
+  services?.forEach((s) => {
+    const cat = s.category ?? 'Other'
+    if (!grouped[cat]) grouped[cat] = []
+    grouped[cat]!.push(s)
+  })
+
+  const categories = Object.keys(grouped).sort()
+
+  // Selected category ya pehli category
+  const activeCategory = selectedCategory && grouped[selectedCategory]
+    ? selectedCategory
+    : categories[0]
+
+  const activeServices = activeCategory ? grouped[activeCategory] : []
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Services</h1>
+    <div className="min-h-screen bg-slate-100">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
+          <Link href="/dashboard" className="text-base md:text-xl font-bold text-slate-900">
+            SMUQ SMM
+          </Link>
+          <Link href="/dashboard" className="text-xs md:text-sm text-blue-600 hover:underline">
+            ← Back
+          </Link>
+        </div>
+      </header>
 
-      {/* Add form */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-slate-900 mb-4">
-          Add New Service
-        </h2>
-        <form action={addService} className="grid grid-cols-5 gap-3">
-          <input
-            name="name"
-            placeholder="Service name"
-            required
-            className="col-span-2 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900"
-          />
-          <input
-            name="category"
-            placeholder="Category"
-            required
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900"
-          />
-          <input
-            name="price"
-            type="number"
-            step="0.01"
-            placeholder="Rs/1000"
-            required
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900"
-          />
-          <div className="flex gap-2">
-            <input
-              name="min"
-              type="number"
-              placeholder="Min"
-              defaultValue={100}
-              className="w-20 border border-slate-300 rounded-lg px-2 py-2 text-sm text-slate-900"
-            />
-            <input
-              name="max"
-              type="number"
-              placeholder="Max"
-              defaultValue={100000}
-              className="w-24 border border-slate-300 rounded-lg px-2 py-2 text-sm text-slate-900"
-            />
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        {/* Header */}
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+            Our Services
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500">
+            {services?.length ?? 0} services available • {categories.length} categories
+          </p>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="bg-white rounded-xl shadow-sm p-3 md:p-4 mb-4 md:mb-6">
+          <p className="text-xs font-semibold text-slate-500 uppercase mb-3 px-1">
+            Select Category
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 md:flex-wrap md:overflow-visible">
+            {categories.map((cat) => {
+              const isActive = cat === activeCategory
+              const count = grouped[cat]?.length ?? 0
+              return (
+                <Link
+                  key={cat}
+                  href={`/dashboard/services?category=${encodeURIComponent(cat)}`}
+                  className={`flex-shrink-0 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition whitespace-nowrap ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {cat}
+                  <span
+                    className={`ml-2 text-xs ${
+                      isActive ? 'text-blue-200' : 'text-slate-400'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
-          <button
-            type="submit"
-            className="col-span-5 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
-          >
-            Add Service
-          </button>
-        </form>
-      </div>
+        </div>
 
-      {/* List */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left text-slate-600">
-            <tr>
-              <th className="px-4 py-3">#</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Rs/1000</th>
-              <th className="px-4 py-3">Min/Max</th>
-              <th className="px-4 py-3">Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services?.map((s) => (
-              <tr key={s.id} className="border-b last:border-0">
-                <td className="px-4 py-3 text-slate-500">#{s.id}</td>
-                <td className="px-4 py-3 font-medium text-slate-900">
-                  {s.name}
-                </td>
-                <td className="px-4 py-3 text-slate-700">{s.category}</td>
-                <td className="px-4 py-3 text-slate-700">
-                  Rs {s.price_per_1000}
-                </td>
-                <td className="px-4 py-3 text-slate-500 text-xs">
-                  {s.min_qty} / {s.max_qty}
-                </td>
-                <td className="px-4 py-3">
-                  <form action={toggleService}>
-                    <input type="hidden" name="id" value={s.id} />
-                    <input
-                      type="hidden"
-                      name="active"
-                      value={String(s.active)}
-                    />
-                    <button
-                      type="submit"
-                      className={`text-xs px-3 py-1 rounded-lg font-medium ${
-                        s.active
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                          : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                      }`}
+        {/* Services List */}
+        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b">
+            <h2 className="text-base md:text-lg font-bold text-slate-900">
+              {activeCategory}
+            </h2>
+            <span className="text-xs text-slate-500">
+              {activeServices?.length ?? 0} services
+            </span>
+          </div>
+
+          {activeServices && activeServices.length > 0 ? (
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-slate-500 border-b">
+                    <tr>
+                      <th className="pb-2">Service</th>
+                      <th className="pb-2">Price / 1000</th>
+                      <th className="pb-2">Min</th>
+                      <th className="pb-2">Max</th>
+                      <th className="pb-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeServices.map((s) => (
+                      <tr
+                        key={s.id}
+                        className="border-b last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="py-3 font-medium text-slate-800">
+                          {s.name}
+                        </td>
+                        <td className="py-3 text-slate-700 font-semibold">
+                          Rs {s.price_per_1000}
+                        </td>
+                        <td className="py-3 text-slate-500">{s.min_qty}</td>
+                        <td className="py-3 text-slate-500">{s.max_qty}</td>
+                        <td className="py-3 text-right">
+                          <Link
+                            href={`/dashboard/new-order?service=${s.id}`}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium"
+                          >
+                            Order Now
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-2">
+                {activeServices.map((s) => (
+                  <div
+                    key={s.id}
+                    className="border border-slate-200 rounded-lg p-3"
+                  >
+                    <p className="font-semibold text-slate-900 text-sm mb-2 leading-snug">
+                      {s.name}
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-slate-600 mb-3">
+                      <span className="font-semibold text-slate-900">
+                        Rs {s.price_per_1000} / 1000
+                      </span>
+                      <span>
+                        Min: {s.min_qty} • Max: {s.max_qty}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/dashboard/new-order?service=${s.id}`}
+                      className="block text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-medium"
                     >
-                      {s.active ? 'Active' : 'Inactive'}
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      Order Now
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="text-slate-500 text-sm py-8 text-center">
+              Is category mein abhi koi service nahi hai.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )
