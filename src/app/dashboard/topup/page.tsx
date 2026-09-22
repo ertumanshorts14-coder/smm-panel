@@ -20,6 +20,12 @@ async function submitTopup(formData: FormData) {
   const txn_ref = formData.get('txn_ref') as string
   const file = formData.get('proof') as File | null
 
+  if (!amount || amount < 50) {
+    redirect(
+      `/dashboard/topup?error=${encodeURIComponent('Minimum top-up Rs 50 hai')}`
+    )
+  }
+
   let proof_url: string | null = null
 
   if (file && file.size > 0) {
@@ -50,13 +56,13 @@ async function submitTopup(formData: FormData) {
 export default async function TopupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string }>
+  searchParams: Promise<{ ok?: string; error?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { ok } = await searchParams
+  const { ok, error } = await searchParams
 
   const { data: requests } = await supabase
     .from('topup_requests')
@@ -92,6 +98,14 @@ export default async function TopupPage({
         <div className="max-w-4xl mx-auto px-4 md:px-6 pt-4">
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
             ✅ Top-up request submit ho gayi! Admin 5-30 minute mein approve karega.
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="max-w-4xl mx-auto px-4 md:px-6 pt-4">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+            ❌ {decodeURIComponent(error)}
           </div>
         </div>
       )}
@@ -173,11 +187,11 @@ export default async function TopupPage({
                   type="number"
                   name="amount"
                   required
-                  min={500}
-                  placeholder="1000"
+                  min={50}
+                  placeholder="100"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
                 />
-                <p className="text-xs text-slate-500 mt-1">Minimum Rs 500</p>
+                <p className="text-xs text-slate-500 mt-1">Minimum Rs 50</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
