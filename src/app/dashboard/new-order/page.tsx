@@ -5,8 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { placeProviderOrder } from '@/lib/tajammal-api'
-import ServiceSelector from './ServiceSelector'
-import SubmitButton from '@/app/components/SubmitButton'
+import OrderForm from './OrderForm'
 
 async function placeOrder(formData: FormData) {
   'use server'
@@ -59,7 +58,7 @@ async function placeOrder(formData: FormData) {
   let charge = Number(((quantity / 1000) * service.price_per_1000).toFixed(2))
   if (charge < 10) charge = 10
 
-  // DUPLICATE PROTECTION: Same user + service + link within 30 seconds
+  // DUPLICATE PROTECTION
   const thirtySecondsAgo = new Date(Date.now() - 30 * 1000).toISOString()
   const { data: recentOrder } = await supabase
     .from('orders')
@@ -244,56 +243,12 @@ export default async function NewOrderPage({
             Category select karo → service chuno → link aur quantity daalo
           </p>
 
-          <form action={placeOrder} className="space-y-5">
-            <ServiceSelector
-              services={services ?? []}
-              preselected={preselectedServiceId}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                3. Link Daalo
-              </label>
-              <input
-                type="url"
-                name="link"
-                required
-                placeholder="https://instagram.com/yourprofile"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Jis page/profile pe service chahiye uska URL
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                4. Quantity Daalo
-              </label>
-              <input
-                type="number"
-                name="quantity"
-                required
-                placeholder="1000"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Selected service ke min/max range ke andar
-              </p>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-xs md:text-sm">
-              <b>Note:</b> Charge = (Quantity / 1000) × Price (minimum Rs 10).
-              Wallet se automatically deduct ho jayega.
-            </div>
-
-            <SubmitButton
-              loadingText="Placing order..."
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
-            >
-              Place Order
-            </SubmitButton>
-          </form>
+          <OrderForm
+            services={services ?? []}
+            preselected={preselectedServiceId}
+            placeOrder={placeOrder}
+            walletBalance={Number(wallet?.balance ?? 0)}
+          />
         </div>
       </div>
     </div>
