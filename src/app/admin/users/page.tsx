@@ -24,6 +24,7 @@ export default async function AdminUsers() {
               <tr>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Username</th>
+                <th className="px-4 py-3">WhatsApp</th>
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Balance</th>
                 <th className="px-4 py-3">Joined</th>
@@ -36,6 +37,20 @@ export default async function AdminUsers() {
                     {u.email}
                   </td>
                   <td className="px-4 py-3 text-slate-700">{u.username}</td>
+                  <td className="px-4 py-3 text-slate-700">
+                    {u.whatsapp ? (
+                      <a
+                        href={`https://wa.me/${u.whatsapp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-700 underline text-xs"
+                      >
+                        {u.whatsapp}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`text-xs px-2 py-1 rounded font-medium ${
