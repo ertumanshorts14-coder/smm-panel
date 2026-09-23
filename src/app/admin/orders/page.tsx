@@ -10,10 +10,47 @@ async function updateOrderStatus(formData: FormData) {
   const id = Number(formData.get('id'))
   const status = formData.get('status') as string
 
+  const { data: currentOrder } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (!currentOrder) return
+
+  const oldStatus = currentOrder.status
+
   await supabase
     .from('orders')
     .update({ status })
     .eq('id', id)
+
+  if (
+    status === 'canceled' &&
+    oldStatus !== 'canceled' &&
+    currentOrder.charge > 0
+  ) {
+    const { data: wallet } = await supabase
+      .from('wallets')
+      .select('balance')
+      .eq('user_id', currentOrder.user_id)
+      .single()
+
+    if (wallet) {
+      await supabase
+        .from('wallets')
+        .update({ balance: Number(wallet.balance) + Number(currentOrder.charge) })
+        .eq('user_id', currentOrder.user_id)
+    }
+
+    await supabase.from('transactions').insert({
+      user_id: currentOrder.user_id,
+      amount: currentOrder.charge,
+      type: 'refund',
+      status: 'completed',
+      note: `Order #${id} canceled by admin — refund`,
+    })
+  }
 
   revalidatePath('/admin/orders')
   revalidatePath('/dashboard')
@@ -68,7 +105,10 @@ export default async function AdminOrders() {
                       Rs {Number(o.charge).toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
-                      <form action={updateOrderStatus} className="flex gap-2">
+                      <form
+                        action={updateOrderStatus}
+                        className="flex gap-2 items-center"
+                      >
                         <input type="hidden" name="id" value={o.id} />
                         <select
                           name="status"
@@ -88,6 +128,11 @@ export default async function AdminOrders() {
                           Save
                         </button>
                       </form>
+                      {o.status === 'canceled' && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅ Refund ho gaya
+                        </p>
+                      )}
                     </td>
                   </tr>
                 ))
