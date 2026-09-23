@@ -21,7 +21,7 @@ export default async function ServicesPage({
     .select('*')
     .eq('active', true)
     .order('category')
-    .order('price_per_1000', { ascending: true })
+    .order('id', { ascending: true })
 
   // Filter by search
   let filtered = services ?? []
@@ -68,7 +68,7 @@ export default async function ServicesPage({
             All Services
           </h1>
           <p className="text-xs md:text-sm text-slate-500">
-            {services?.length ?? 0} services • {categories.length} categories • Prices 1000 quantity ke hisaab se
+            {services?.length ?? 0} services • {categories.length} categories
           </p>
         </div>
 
