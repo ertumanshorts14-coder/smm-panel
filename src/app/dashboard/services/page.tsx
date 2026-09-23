@@ -20,8 +20,8 @@ export default async function ServicesPage({
     .from('services')
     .select('*')
     .eq('active', true)
-    .order('popular', { ascending: false })
     .order('category')
+    .order('price_per_1000', { ascending: true })
 
   // Filter by search
   let filtered = services ?? []
@@ -68,7 +68,7 @@ export default async function ServicesPage({
             All Services
           </h1>
           <p className="text-xs md:text-sm text-slate-500">
-            {services?.length ?? 0} services • {categories.length} categories
+            {services?.length ?? 0} services • {categories.length} categories • Prices 1000 quantity ke hisaab se
           </p>
         </div>
 
@@ -103,7 +103,11 @@ export default async function ServicesPage({
                   }`}
                 >
                   {cat}
-                  <span className={`ml-2 text-xs ${isActive ? 'text-blue-200' : 'text-slate-400'}`}>
+                  <span
+                    className={`ml-2 text-xs ${
+                      isActive ? 'text-blue-200' : 'text-slate-400'
+                    }`}
+                  >
                     {count}
                   </span>
                 </Link>
@@ -139,14 +143,12 @@ export default async function ServicesPage({
                   </thead>
                   <tbody>
                     {activeServices.map((s: any) => (
-                      <tr key={s.id} className="border-b last:border-0 hover:bg-slate-50">
+                      <tr
+                        key={s.id}
+                        className="border-b last:border-0 hover:bg-slate-50"
+                      >
                         <td className="py-3 font-medium text-slate-800">
                           {s.name}
-                          {s.popular && (
-                            <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                              ⭐ Popular
-                            </span>
-                          )}
                         </td>
                         <td className="py-3 text-slate-700 font-semibold">
                           Rs {s.price_per_1000}
@@ -170,22 +172,20 @@ export default async function ServicesPage({
               {/* Mobile cards */}
               <div className="md:hidden space-y-2">
                 {activeServices.map((s: any) => (
-                  <div key={s.id} className="border border-slate-200 rounded-lg p-3">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <p className="font-semibold text-slate-900 text-sm leading-snug flex-1">
-                        {s.name}
-                      </p>
-                      {s.popular && (
-                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full whitespace-nowrap">
-                          ⭐
-                        </span>
-                      )}
-                    </div>
+                  <div
+                    key={s.id}
+                    className="border border-slate-200 rounded-lg p-3"
+                  >
+                    <p className="font-semibold text-slate-900 text-sm mb-2 leading-snug">
+                      {s.name}
+                    </p>
                     <div className="flex justify-between items-center text-xs text-slate-600 mb-3">
                       <span className="font-semibold text-slate-900">
                         Rs {s.price_per_1000} / 1000
                       </span>
-                      <span>Min: {s.min_qty} • Max: {s.max_qty}</span>
+                      <span>
+                        Min: {s.min_qty} • Max: {s.max_qty}
+                      </span>
                     </div>
                     <Link
                       href={`/dashboard/new-order?service=${s.id}`}
