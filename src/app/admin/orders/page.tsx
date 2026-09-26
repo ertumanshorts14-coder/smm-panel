@@ -10,6 +10,7 @@ async function updateOrderStatus(formData: FormData) {
   const id = Number(formData.get('id'))
   const status = formData.get('status') as string
 
+  // 1. Current order ki details lo
   const { data: currentOrder } = await supabase
     .from('orders')
     .select('*')
@@ -20,16 +21,19 @@ async function updateOrderStatus(formData: FormData) {
 
   const oldStatus = currentOrder.status
 
+  // 2. Order status update karo
   await supabase
     .from('orders')
     .update({ status })
     .eq('id', id)
 
+  // 3. AUTO REFUND — agar canceled ho raha hai
   if (
     status === 'canceled' &&
     oldStatus !== 'canceled' &&
-    currentOrder.charge > 0
+    Number(currentOrder.charge) > 0
   ) {
+    // Wallet mein refund add karo
     const { data: wallet } = await supabase
       .from('wallets')
       .select('balance')
@@ -39,10 +43,13 @@ async function updateOrderStatus(formData: FormData) {
     if (wallet) {
       await supabase
         .from('wallets')
-        .update({ balance: Number(wallet.balance) + Number(currentOrder.charge) })
+        .update({
+          balance: Number(wallet.balance) + Number(currentOrder.charge),
+        })
         .eq('user_id', currentOrder.user_id)
     }
 
+    // Transaction record banao
     await supabase.from('transactions').insert({
       user_id: currentOrder.user_id,
       amount: currentOrder.charge,
@@ -54,6 +61,7 @@ async function updateOrderStatus(formData: FormData) {
 
   revalidatePath('/admin/orders')
   revalidatePath('/dashboard')
+  revalidatePath('/admin/users')
 }
 
 export default async function AdminOrders() {
@@ -64,7 +72,13 @@ export default async function AdminOrders() {
     .select('*, services(name), profiles(email)')
     .order('created_at', { ascending: false })
 
-  const statuses = ['pending', 'processing', 'completed', 'partial', 'canceled']
+  const statuses = [
+    'pending',
+    'processing',
+    'completed',
+    'partial',
+    'canceled',
+  ]
 
   return (
     <div>

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 import { requireAdmin } from '@/lib/admin'
+import Link from 'next/link'
 
 export default async function AdminUsers() {
   const { supabase } = await requireAdmin()
@@ -14,7 +15,7 @@ export default async function AdminUsers() {
   return (
     <div>
       <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-6">
-        Users
+        Users ({users?.length ?? 0})
       </h1>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -28,11 +29,15 @@ export default async function AdminUsers() {
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Balance</th>
                 <th className="px-4 py-3">Joined</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {users?.map((u: any) => (
-                <tr key={u.id} className="border-b last:border-0">
+                <tr
+                  key={u.id}
+                  className="border-b last:border-0 hover:bg-slate-50"
+                >
                   <td className="px-4 py-3 font-medium text-slate-900">
                     {u.email}
                   </td>
@@ -62,11 +67,19 @@ export default async function AdminUsers() {
                       {u.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-700">
-                    Rs {u.wallets?.balance ?? 0}
+                  <td className="px-4 py-3 font-semibold text-slate-900">
+                    Rs {Number(u.wallets?.balance ?? 0).toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-slate-500 text-xs">
                     {new Date(u.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/users/${u.id}`}
+                      className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+                    >
+                      View →
+                    </Link>
                   </td>
                 </tr>
               ))}
